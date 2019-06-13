@@ -37,4 +37,9 @@ fn is_sql_alphanumeric(chr: u8) -> bool {
 
 fn is_value_digit(chr: u8) -> bool {
     is_digit(chr) || chr == '.' as u8
+    || chr == '+' as u8
+    || chr == '-' as u8
+    || chr == '*' as u8
+    || chr == '/' as u8
+
 }
