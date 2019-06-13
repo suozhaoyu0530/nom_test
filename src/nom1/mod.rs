@@ -4,7 +4,7 @@ use nom::types::CompleteByteSlice;
 use nom::{multispace, multispace0};
 
 use crate::commons::{sql_alphanumeric, as_alias, number_alphanumeric};
-use field_expr::{Field, FieldExpr, FixedValue, ValueType};
+use field_expr::{Field, FieldExpr, FixedValue, ValueType, Function};
 
 #[derive(Debug, PartialEq)]
 pub struct SelectStatement {
@@ -34,6 +34,18 @@ named!(field_list<CompleteByteSlice, Vec<FieldExpr>>,
     many0!(
         alt!(
             do_parse!(
+                f: function_reference >>
+                opt!(
+                    do_parse!(
+                        multispace0 >>
+                        tag!(",") >>
+                        multispace0 >>
+                        ()
+                    )
+                ) >>
+                (FieldExpr::Function(f))
+            )
+            | do_parse!(
                 statement: statement_reference >>
                 opt!(
                     do_parse!(
@@ -130,6 +142,21 @@ named!(statement_reference<CompleteByteSlice, SelectStatementChild>,
     )
 );
 
+named!(function_reference<CompleteByteSlice, Function>,
+    do_parse!(
+        name: sql_alphanumeric >>
+        tag!("(") >>
+        fields: field_list >>
+        tag!(")") >>
+        alias: opt!(as_alias) >>
+        (Function {
+            name: String::from_utf8(name.to_vec()).unwrap(),
+            params: fields,
+            alias: alias.map(|a| a.to_string())
+        })
+    )
+);
+
 #[test]
 fn field_test() {
     let sql = "select name n, t.age, 'from' as 'a', 1 as num, (select child from) child \
@@ -185,6 +212,43 @@ fn field_test() {
     };
 
     let sql_slice = CompleteByteSlice(sql.as_bytes());
+
+    assert_eq!(s, select_statement(sql_slice).unwrap().1);
+}
+
+#[test]
+fn function_test() {
+    let sql = "select t.age age, sum(t.total) total from";
+    let sql_slice = CompleteByteSlice(sql.as_bytes());
+
+    let f1 = Field {
+        table: Some(String::from("t")),
+        name: String::from("age"),
+        alias: Some(String::from("age"))
+    };
+
+    let fc1 = Field {
+        table: Some(String::from("t")),
+        name: String::from("total"),
+        alias: None
+    };
+
+    let fec1 = FieldExpr::Normal(fc1);
+    let fecv = vec![fec1];
+
+    let ff1 = Function {
+        name: String::from("sum"),
+        params: fecv,
+        alias: Some(String::from("total"))
+    };
+
+    let fe1 = FieldExpr::Normal(f1);
+    let fe2 = FieldExpr::Function(ff1);
+    let fev = vec![fe1, fe2];
+
+    let s = SelectStatement {
+        fields: fev
+    };
 
     assert_eq!(s, select_statement(sql_slice).unwrap().1);
 }

@@ -4,7 +4,8 @@ use super::SelectStatementChild;
 pub enum FieldExpr {
     Normal(Field),
     FixedValue(FixedValue),
-    Statement(SelectStatementChild)
+    Statement(SelectStatementChild),
+    Function(Function)
 }
 
 #[derive(Debug, PartialEq)]
@@ -25,4 +26,11 @@ pub struct FixedValue {
 pub enum ValueType {
     NUMBER,
     STRING
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Function {
+    pub name: String,
+    pub params: Vec<FieldExpr>,
+    pub alias: Option<String>
 }
