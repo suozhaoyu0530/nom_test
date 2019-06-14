@@ -6,6 +6,7 @@ use crate::commons::{sql_alphanumeric, as_alias, number_alphanumeric};
 use super::field_expr::{Field, FieldExpr, FixedValue, ValueType, Function};
 use super::{SelectStatementChild, select_statement};
 use crate::nom1::SelectStatement;
+use crate::nom1::table_expr::{Table, TableExpr};
 
 named!(pub field_list<CompleteByteSlice, Vec<FieldExpr>>,
     many0!(
@@ -140,7 +141,7 @@ named!(function_reference<CompleteByteSlice, Function>,
 
 #[test]
 fn field_test() {
-    let field = "name n, t.age, 'from' as 'a', 1 as num, (select child from) child";
+    let field = "name n, t.age, 'from' as 'a', 1 as num, (select child from t) child";
     let field_slice = CompleteByteSlice(field.as_bytes());
 
     let f1 = Field {
@@ -178,8 +179,15 @@ fn field_test() {
     };
     let fec1 = FieldExpr::Normal(fc1);
     let fecv1 = vec![fec1];
+    let t1 = Table {
+        name: String::from("t"),
+        alias: None
+    };
+    let te1 = TableExpr::Normal(t1);
+    let tev = vec![te1];
     let s1 = SelectStatement {
-        fields: fecv1
+        fields: fecv1,
+        tables: tev
     };
     let sc1 = SelectStatementChild {
         select_statement: s1,
