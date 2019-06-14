@@ -107,10 +107,7 @@ fn statement_table() {
     let fet1 = TableExpr::Normal(ft1);
     let fectv = vec![fet1];
 
-    let s = SelectStatement {
-        fields: fecv,
-        tables: fectv
-    };
+    let s = SelectStatement::new(fecv, fectv);
     let sc = SelectStatementChild {
         select_statement: s,
         alias: Some(String::from("child"))
@@ -152,10 +149,7 @@ fn mix_table() {
     };
     let tec1 = TableExpr::Normal(tc1);
     let tecv = vec![tec1];
-    let s = SelectStatement {
-        fields: fecv,
-        tables: tecv
-    };
+    let s = SelectStatement::new(fecv, tecv);
     let sc = SelectStatementChild {
         select_statement: s,
         alias: Some(String::from("tname"))

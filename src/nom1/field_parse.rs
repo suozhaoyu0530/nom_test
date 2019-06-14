@@ -185,10 +185,7 @@ fn field_test() {
     };
     let te1 = TableExpr::Normal(t1);
     let tev = vec![te1];
-    let s1 = SelectStatement {
-        fields: fecv1,
-        tables: tev
-    };
+    let s1 = SelectStatement::new(fecv1, tev);
     let sc1 = SelectStatementChild {
         select_statement: s1,
         alias: Some(String::from("child"))

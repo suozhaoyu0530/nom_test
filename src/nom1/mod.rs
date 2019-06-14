@@ -24,6 +24,15 @@ pub struct SelectStatementChild {
     pub alias: Option<String>
 }
 
+impl SelectStatement {
+    pub fn new(f: Vec<FieldExpr>, t: Vec<TableExpr>) -> SelectStatement {
+        SelectStatement {
+            fields: f,
+            tables: t
+        }
+    }
+}
+
 named!(pub select_statement<CompleteByteSlice, SelectStatement>,
     do_parse!(
         tag_no_case!("select") >>
