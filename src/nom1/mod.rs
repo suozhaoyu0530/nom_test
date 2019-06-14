@@ -1,10 +1,11 @@
 mod field_expr;
+mod field_parse;
 
 use nom::types::CompleteByteSlice;
-use nom::{multispace, multispace0};
+use nom::multispace;
 
-use crate::commons::{sql_alphanumeric, as_alias, number_alphanumeric};
 use field_expr::{Field, FieldExpr, FixedValue, ValueType, Function};
+use field_parse::field_list;
 
 #[derive(Debug, PartialEq)]
 pub struct SelectStatement {
@@ -17,7 +18,7 @@ pub struct SelectStatementChild {
     pub alias: Option<String>
 }
 
-named!(select_statement<CompleteByteSlice, SelectStatement>,
+named!(pub select_statement<CompleteByteSlice, SelectStatement>,
     do_parse!(
         tag_no_case!("select") >>
         multispace >>
@@ -26,133 +27,6 @@ named!(select_statement<CompleteByteSlice, SelectStatement>,
         tag_no_case!("from") >>
         (SelectStatement {
             fields: field
-        })
-    )
-);
-
-named!(field_list<CompleteByteSlice, Vec<FieldExpr>>,
-    many0!(
-        alt!(
-            do_parse!(
-                f: function_reference >>
-                opt!(
-                    do_parse!(
-                        multispace0 >>
-                        tag!(",") >>
-                        multispace0 >>
-                        ()
-                    )
-                ) >>
-                (FieldExpr::Function(f))
-            )
-            | do_parse!(
-                statement: statement_reference >>
-                opt!(
-                    do_parse!(
-                        multispace0 >>
-                        tag!(",") >>
-                        multispace0 >>
-                        ()
-                    )
-                ) >>
-                (FieldExpr::Statement(statement))
-            )
-            | do_parse!(
-                field: fixed_reference >>
-                opt!(
-                    do_parse!(
-                        multispace0 >>
-                        tag!(",") >>
-                        multispace0 >>
-                        ()
-                    )
-                ) >>
-                (FieldExpr::FixedValue(field))
-            )
-            | do_parse!(
-                field: field_reference >>
-                opt!(
-                    do_parse!(
-                        multispace0 >>
-                        tag!(",") >>
-                        multispace0 >>
-                        ()
-                    )
-                ) >>
-                (FieldExpr::Normal(field))
-            )
-        )
-    )
-);
-
-named!(field_reference<CompleteByteSlice, Field>,
-    do_parse!(
-        table: opt!(
-            do_parse!(
-                tbl_name: sql_alphanumeric >>
-                tag!(".") >>
-                (String::from_utf8(tbl_name.to_vec()).unwrap())
-            )
-        ) >>
-        name: sql_alphanumeric >>
-        alias: opt!(as_alias) >>
-        (Field{
-            table: table,
-            name: String::from_utf8(name.to_vec()).unwrap(),
-            alias: alias.map(|a| a.to_string())
-        })
-    )
-);
-
-named!(fixed_reference<CompleteByteSlice, FixedValue>,
-    alt!(
-        do_parse!(
-            alt!(tag!("'") | tag!("\"")) >>
-            value: sql_alphanumeric >>
-            alt!(tag!("'") | tag!("\"")) >>
-            alias: opt!(as_alias) >>
-            (FixedValue {
-                value: String::from_utf8(value.to_vec()).unwrap(),
-                value_type: ValueType::STRING,
-                alias: alias.map(|a| a.to_string())
-            })
-        )
-        | do_parse!(
-            value: number_alphanumeric >>
-            alias: opt!(as_alias) >>
-            (FixedValue {
-                value: String::from_utf8(value.to_vec()).unwrap(),
-                value_type: ValueType::NUMBER,
-                alias: alias.map(|a| a.to_string())
-            })
-        )
-    )
-);
-
-named!(statement_reference<CompleteByteSlice, SelectStatementChild>,
-    do_parse!(
-        tag!("(") >>
-        statement: select_statement >>
-        tag!(")") >>
-        alias: opt!(as_alias) >>
-        (SelectStatementChild {
-            select_statement: statement,
-            alias: alias.map(|a| a.to_string())
-        })
-    )
-);
-
-named!(function_reference<CompleteByteSlice, Function>,
-    do_parse!(
-        name: sql_alphanumeric >>
-        tag!("(") >>
-        fields: field_list >>
-        tag!(")") >>
-        alias: opt!(as_alias) >>
-        (Function {
-            name: String::from_utf8(name.to_vec()).unwrap(),
-            params: fields,
-            alias: alias.map(|a| a.to_string())
         })
     )
 );
@@ -218,7 +92,7 @@ fn field_test() {
 
 #[test]
 fn function_test() {
-    let sql = "select t.age age, sum(t.total) total from";
+    let sql = "select `t`.`age` age, sum(t.total) total from";
     let sql_slice = CompleteByteSlice(sql.as_bytes());
 
     let f1 = Field {
