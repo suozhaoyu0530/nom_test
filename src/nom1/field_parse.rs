@@ -181,7 +181,8 @@ fn field_test() {
     let fecv1 = vec![fec1];
     let t1 = Table {
         name: String::from("t"),
-        alias: None
+        alias: None,
+        join: None
     };
     let te1 = TableExpr::Normal(t1);
     let tev = vec![te1];

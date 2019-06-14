@@ -13,6 +13,13 @@ named!(pub sql_alphanumeric<CompleteByteSlice, CompleteByteSlice>,
     )
 );
 
+named!(pub sql_alphanumeric_nokey<CompleteByteSlice, CompleteByteSlice>,
+    do_parse!(
+        ident: take_while1!(is_sql_alphanumeric) >>
+        (ident)
+    )
+);
+
 named!(pub number_alphanumeric<CompleteByteSlice, CompleteByteSlice>,
     do_parse!(
         ident: take_while1!(is_value_digit) >>

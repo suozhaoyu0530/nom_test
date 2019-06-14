@@ -22,4 +22,10 @@ fn main() {
         Err(e) => panic!("Invalid UTF-8 sequence: {}", e),
     };
     println!("result: {}", s);
+
+    let s = match String::from("aaa").to_uppercase().as_ref() {
+        "AAA" => true,
+        _ => false
+    };
+    println!("{}", s);
 }
