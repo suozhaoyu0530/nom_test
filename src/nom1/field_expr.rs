@@ -1,6 +1,6 @@
 use super::SelectStatementChild;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum FieldExpr {
     Normal(Field),
     FixedValue(FixedValue),
@@ -8,27 +8,27 @@ pub enum FieldExpr {
     Function(Function)
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Field {
     pub table: Option<String>,
     pub name: String,
     pub alias: Option<String>
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct FixedValue {
     pub value: String,
     pub value_type: ValueType,
     pub alias: Option<String>
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ValueType {
     NUMBER,
     STRING
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Function {
     pub name: String,
     pub params: Vec<FieldExpr>,

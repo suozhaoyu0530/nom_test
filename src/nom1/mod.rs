@@ -2,6 +2,8 @@ mod field_expr;
 mod field_parse;
 mod table_expr;
 mod table_parse;
+mod condition_expr;
+mod condition_parse;
 
 use nom::types::CompleteByteSlice;
 use nom::multispace;
@@ -12,13 +14,13 @@ use table_parse::table_list;
 
 use crate::nom1::table_expr::TableExpr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct SelectStatement {
     pub fields: Vec<FieldExpr>,
     pub tables: Vec<TableExpr>
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct SelectStatementChild {
     pub select_statement: SelectStatement,
     pub alias: Option<String>

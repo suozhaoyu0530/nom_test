@@ -1,7 +1,7 @@
 use super::SelectStatementChild;
 use crate::nom1::SelectStatement;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Table {
     pub name: String,
     pub alias: Option<String>,
@@ -18,26 +18,26 @@ impl Table {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum TableExpr {
     Normal(Table),
     Statement(SelectStatementChild)
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct StatementChildJoin {
     pub select_statement: SelectStatement,
     pub alias: Option<String>,
     pub join: Option<TableJoin>
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct TableJoin {
     pub join_type: JoinType,
     pub table_expr: TableExpr
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum JoinType {
     LEFT,
     RIGHT,
