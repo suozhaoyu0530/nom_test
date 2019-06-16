@@ -50,7 +50,6 @@ named!(table_reference<CompleteByteSlice, Table>,
         (Table {
             name: String::from_utf8(name.to_vec()).unwrap(),
             alias: alias.map(|a| a.to_string()),
-//            join: None
             join: match join {
                 Some(j) => Some(Box::new(j)),
                 None => None

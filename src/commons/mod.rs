@@ -48,5 +48,4 @@ fn is_value_digit(chr: u8) -> bool {
     || chr == '-' as u8
     || chr == '*' as u8
     || chr == '/' as u8
-
 }
