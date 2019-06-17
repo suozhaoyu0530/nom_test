@@ -12,6 +12,19 @@ named!(pub field_list<CompleteByteSlice, Vec<FieldExpr>>,
     many0!(
         alt!(
             do_parse!(
+                multispace0 >>
+                tag!("*") >>
+                opt!(
+                    do_parse!(
+                        multispace0 >>
+                        tag!(",") >>
+                        multispace0 >>
+                        ()
+                    )
+                ) >>
+                (FieldExpr::Normal(Field::new("*")))
+            )
+            | do_parse!(
                 f: function_reference >>
                 opt!(
                     do_parse!(
