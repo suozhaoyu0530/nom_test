@@ -6,7 +6,7 @@ use super::condition_expr::{ConditionExpr, ComparisonType,
 use super::field_parse::field_list;
 use crate::nom1::field_expr::{Field, FieldExpr, FixedValue, ValueType};
 
-named!(condition_list<CompleteByteSlice, ConditionExpr>,
+named!(pub condition_list<CompleteByteSlice, ConditionExpr>,
     alt!(
         do_parse!(
             condition: condition_reference >>
@@ -106,7 +106,7 @@ fn comparison_test() {
 }
 
 #[test]
-fn codition_test() {
+fn condition_test() {
     let c1 = "c.std_id = st.id";
     let c1_slice = CompleteByteSlice(c1.as_bytes());
 
@@ -263,14 +263,14 @@ fn parentheses_next() {
     let fr3 = Field::new_name_table("id", "t");
     let fre3 = FieldExpr::Normal(fr3);
 
-    let c2 = Condition::new(fle2, ComparisonType::Equal, fre2);
     let c3 = Condition::new(fle3, ComparisonType::Equal, fre3);
-
     let ce3 = ConditionExpr::Normal(c3);
+    let n1 = NextType::Or(Box::new(ce3));
+    let c2 = Condition::new_next(fle2, ComparisonType::Equal, fre2, n1);
+
     let ce2 = ConditionExpr::Normal(c2);
 
-    let n2 = NextType::Or(Box::new(ce3));
-    let p2 = ConditionParentheses::new_next(ce2, n2);
+    let p2 = ConditionParentheses::new(ce2);
     let cp2 = ConditionExpr::Parentheses(p2);
 
     let n1 = NextType::And(Box::new(cp2));

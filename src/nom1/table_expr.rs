@@ -1,4 +1,6 @@
 use super::SelectStatementChild;
+use super::condition_expr::ConditionExpr;
+
 use crate::nom1::SelectStatement;
 
 #[derive(Debug, PartialEq, Clone)]
@@ -34,7 +36,8 @@ pub struct StatementChildJoin {
 #[derive(Debug, PartialEq, Clone)]
 pub struct TableJoin {
     pub join_type: JoinType,
-    pub table_expr: TableExpr
+    pub table_expr: TableExpr,
+    pub on: ConditionExpr
 }
 
 #[derive(Debug, PartialEq, Clone)]

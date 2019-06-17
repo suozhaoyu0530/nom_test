@@ -3,10 +3,12 @@ use nom::multispace0;
 
 use super::table_expr::{TableExpr, Table, TableJoin, JoinType};
 use super::{select_statement, SelectStatementChild};
+use super::condition_parse::condition_list;
 
 use crate::commons::{as_alias, sql_alphanumeric, sql_alphanumeric_nokey};
 use crate::nom1::field_expr::{Field, FieldExpr};
 use crate::nom1::SelectStatement;
+use crate::nom1::condition_expr::{Condition, ComparisonType, ConditionExpr};
 
 named!(pub table_list<CompleteByteSlice, Vec<TableExpr>>,
     many0!(
@@ -84,13 +86,17 @@ named!(table_join<CompleteByteSlice, TableJoin>,
                 (TableExpr::Normal(t))
             )
         ) >>
+        multispace0 >>
+        tag_no_case!("on") >>
+        on: condition_list >>
         (TableJoin {
             join_type: match String::from_utf8(ty.to_vec()).unwrap().to_uppercase().as_ref() {
                 "LEFT" => JoinType::LEFT,
                 "RIGHT" => JoinType::RIGHT,
                 _ => JoinType::INNER
             },
-            table_expr: expr
+            table_expr: expr,
+            on: on
         })
     )
 );
@@ -199,14 +205,23 @@ fn mix_table() {
 
 #[test]
 fn simple_join() {
-    let table = "student st left join class";
+    let table = "student st left join class on student_id=st.id";
     let table_slice = CompleteByteSlice(table.as_bytes());
 
     let jt = Table::new("class");
     let jet = TableExpr::Normal(jt);
+
+    let fl = Field::new("student_id");
+    let fle = FieldExpr::Normal(fl);
+    let fr = Field::new_name_table("id", "st");
+    let fre = FieldExpr::Normal(fr);
+    let c = Condition::new(fle, ComparisonType::Equal, fre);
+    let ce = ConditionExpr::Normal(c);
+
     let join = TableJoin {
         join_type: JoinType::LEFT,
-        table_expr: jet
+        table_expr: jet,
+        on: ce
     };
 
     let t = Table {
